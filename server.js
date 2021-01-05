@@ -28,14 +28,9 @@ app.use(express.json())
 app.use(cors())
 
 
-app.get('/',(req,res) => {
-  res.json('main page')
-})
+app.get('/',(req,res) => { res.send('main page')})
 
-
-app.get('/profile',(req,res) => {
-  res.json('profile page')
-})
+app.get('/profile',(req,res) => { res.send('profile page')})
 
 app.get('/profile/:id', (req, res) => count.handleCount(req, res, db))
 
