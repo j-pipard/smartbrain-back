@@ -1,98 +1,51 @@
 const express = require('express')
-
+let bcrypt = require('bcryptjs');
+const cors = require('cors')
+const knex = require('knex')
 const app = express()
 
-const port = 3002
+const register = require('./controllers/register')
+const signin = require('./controllers/signin')
+const image = require('./controllers/image')
+const count = require('./controllers/count')
 
-const database = {
-  users : [
-    {
-      id: '123',
-      name: 'John',
-      email: 'john@email.com',
-      password: 'cookies',
-      entries: 0,
-      joined: new Date()
-    },
-    {
-      id: '124',
-      name: 'Sally',
-      email: 'Sally@email.com',
-      password: 'bananas',
-      entries: 0,
-      joined: new Date()
-    },
+const db = knex({
+  client: 'pg',
+  connection: {
+    host : '127.0.0.1',
+    user : 'jonathanpipard',
+    password : '',
+    database : 'smart-brain'
+  }
+});
 
-  ]
-}
+const port = 3000
+
+
+
 
 app.use(express.json())
+app.use(cors())
+
 
 app.get('/',(req,res) => {
-  res.json('this is working')
+  res.json('main page')
 })
 
 
 app.get('/profile',(req,res) => {
-  res.json(database.users)
+  res.json('profile page')
 })
 
-app.get('/profile/:id', (req, res) => {
-  const { id } = req.params 
-  let found = false
-  database.users.forEach((user) => {
-    if(user.id === id) {
-      found = true
-      return (
-        res.send(user)
-      )
-    }
-  })
-  if(!found) {
-    return (
-      res.status(404).json('not found')
-    )
-  }
-})
+app.get('/profile/:id', (req, res) => count.handleCount(req, res, db))
 
-app.post('/image', (req, res) => {
-  const { id } = req.body 
-  let found = false
-  database.users.forEach((user) => {
-    if(user.id === id) {
-      found = true
-      user.entries++
-      return (res.json(user.entries))
-    }
-  })
-  if(!found) {
-    return (
-      res.status(404).json('not found')
-    )
-  }
-})
+app.put('/image', (req, res) => image.handleImage(req, res, db))
 
-app.post('/signin', (req,res) => {
-  if((req.body.email === database.users[0].email && req.body.password === database.users[0].password ) )
-    {
-      res.json('logged in')
-    } else {
-      res.status(400).json('error logging in')
-    }
-})
+app.post('/signin', (req,res) => signin.handleSignin(req, res, bcrypt, db))
 
-app.post('/register', (req,res) => {
-  const { email, name, password } = req.body
-  database.users.push({
-    id: '125',
-      name: name,
-      email: email,
-      password: password,
-      entries: 0,
-      joined: new Date()
-  })
-  res.send(database.users[database.users.length-1])
-})
+app.post('/register', (req,res) => register.handleRegister(req, res, bcrypt, db))
+
+app.post('/imageUrl', (req, res) => image.handleApiCall(req, res))
 
 app.listen(port, () => {
   console.log(`app is running on port ${port}`)
