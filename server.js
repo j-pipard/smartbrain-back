@@ -12,10 +12,11 @@ const count = require('./controllers/count')
 const db = knex({
   client: 'pg',
   connection: {
-    host : 'postgresql-tetrahedral-03947',
-    user : 'jonathanpipard',
-    password : '',
-    database : 'smart-brain'
+    host : process.env.DATABASE_URL,
+    ssl :{
+      rejectUnauthorized:false
+    }
+   
   }
 });
 
